@@ -9,7 +9,6 @@ def check_embargo():
         embargo_file_reader = csv.reader(embargo_file, delimiter='|')
         for row in embargo_file_reader:
             correct_import = True
-            print('------------------------------------')
             brage_file_name = row[1].strip()
             brage_embargo_date = row[2].strip()
             if len(row) == 4:

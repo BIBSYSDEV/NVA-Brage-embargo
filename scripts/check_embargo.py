@@ -1,9 +1,11 @@
 from load_registration import load_registration
 import csv
 
+from scripts.embargo_appender import extract_handles
+
 embargo_file_name = 'embargo_files.csv'
 
-def check_embargo():
+def check_embargo(environment):
     log_file = open('../files/logfile.txt', 'w', encoding="utf-8")
     with open(f'../files/{embargo_file_name}', newline='') as embargo_file:
         embargo_file_reader = csv.reader(embargo_file, delimiter='|')
@@ -13,7 +15,7 @@ def check_embargo():
             brage_embargo_date = row[2].strip()
             if len(row) == 4:
                 id = row[3].strip()
-                registration = load_registration(id)
+                registration = load_registration(id, environment)
                 for file in registration['associatedArtifacts']:
                     nva_file_name = file['name']
                     if nva_file_name == brage_file_name:
@@ -39,4 +41,17 @@ def check_embargo():
         log_file.close()
 
 if __name__ == '__main__':
-    check_embargo()
+    # Name of the S3 bucket to extract identifiers from
+    bucket_name = 'brage-migration-reports-884807050265'
+
+    # The environment where the script runs (e.g., 'dev', 'prod')
+    environment = 'dev'
+
+    # The institution for which the script will extract publication identifiers
+    institution = 'niku'
+
+    # Function to extract handles from the given bucket for the given institution
+    extract_handles(bucket_name, institution)
+
+    # Function to check embargo status in the given environment
+    check_embargo(environment)

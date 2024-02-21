@@ -45,12 +45,12 @@ def login(username):
             if count == 3: trying = False
     return ''
 
-def load_registration(id):
+def load_registration(id, environment):
     auth_token = login(USER)
     headers['Authorization'] = f'Bearer {auth_token}'
-    url = get_registration_endpoint.format(STAGE, id)
+    url = get_registration_endpoint.format(environment, id)
     response = requests.get(headers=headers, url=url)
     return response.json()
 
 if __name__ == '__main__':
-    load_registration('018dc64ae7de-71b4dd55-9a44-4c14-81ea-ea56cf32b63b')
+    load_registration()

@@ -29,6 +29,8 @@ def check_embargo():
                             print('Date incorrect')
                             correct_import = False
                 if not correct_import:
+                    # log handle
+                    # log manglende publikasjonsId
                     log_file.write(brage_file_name + ' : '+ brage_embargo_date + ' : ' + id + ' : Embargo not set\n')
                     print(brage_file_name + ' - Failed')
                 else:

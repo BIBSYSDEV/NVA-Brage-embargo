@@ -19,6 +19,7 @@ def check_embargo(environment):
   with open(f'../files/{embargo_file_name}', newline='') as embargo_file:
     embargo_file_reader = csv.reader(embargo_file, delimiter='|')
     for row in embargo_file_reader:
+      found_file = False
       correct_import = True
       brage_file_name = row[1].strip()
       brage_embargo_date = row[2].strip()
@@ -28,18 +29,17 @@ def check_embargo(environment):
         for file in registration['associatedArtifacts']:
           nva_file_name = file['name']
           if nva_file_name == brage_file_name:
+            found_file = True
             nva_embargo_date = ''
             if 'embargoDate' in file:
               nva_embargo_date = file['embargoDate'].split('T')[0]
             if file['visibleForNonOwner']:
               print('Should not be visible for non owner')
               correct_import = False
-            if nva_embargo_date == brage_embargo_date:
-              print('Date correct')
-            else:
+            if not nva_embargo_date == brage_embargo_date:
               print('Date incorrect')
               correct_import = False
-        if not correct_import:
+        if not correct_import and found_file:
           # log handle
           # log manglende publikasjonsId
           log_file.write(

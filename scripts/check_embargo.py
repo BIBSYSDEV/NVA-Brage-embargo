@@ -19,6 +19,8 @@ environment = sys.argv[2]
 if (environment == 'prod'):
   bucket_name = 'brage-migration-reports-755923822223'
 elif (environment == 'test'):
+  bucket_name = 'brage-migration-reports-812481234721'
+elif (environment == 'dev'):
   bucket_name = 'brage-migration-reports-884807050265'
 else:
   print('Environment ' + env + " not supported!")

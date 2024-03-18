@@ -1,18 +1,28 @@
-from load_registration import load_registration
-import csv
-
-from scripts.embargo_appender import extract_handles
+import csv, sys
 
 embargo_file_name = 'embargo_files.csv'
 
 # Name of the S3 bucket to extract identifiers from
-bucket_name = 'brage-migration-reports-884807050265'
 
-# The environment where the script runs (e.g., 'dev', 'prod')
-environment = 'dev'
+if (len(sys.argv) < 3):
+  print ('Usage: check_embargo.py <inst> <env>')
+  exit(1)
+
+from load_registration import load_registration
+from scripts.embargo_appender import extract_handles
 
 # The institution for which the script will extract publication identifiers
-institution = 'niku'
+institution = sys.argv[1]
+
+# The environment where the script runs (e.g., 'dev', 'prod')
+environment = sys.argv[2]
+if (environment == 'prod'):
+  bucket_name = 'brage-migration-reports-755923822223'
+elif (environment == 'test'):
+  bucket_name = 'brage-migration-reports-884807050265'
+else:
+  print('Environment ' + env + " not supported!")
+  exit(2)
 
 def check_embargo(environment):
   log_file = open('../files/logfile.txt', 'w', encoding="utf-8")

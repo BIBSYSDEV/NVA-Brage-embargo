@@ -9,7 +9,7 @@ if (len(sys.argv) < 3):
   exit(1)
 
 from load_registration import load_registration
-from scripts.embargo_appender import extract_handles
+from embargo_appender import extract_handles
 
 # The institution for which the script will extract publication identifiers
 institution = sys.argv[1]

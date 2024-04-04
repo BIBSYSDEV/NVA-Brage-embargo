@@ -66,7 +66,7 @@ def check_embargo(environment):
         if not correct_import and found_file:
           # log handle
           # log manglende publikasjonsId
-          error_file.write(brage_file_name + ' : Failed\n')
+          error_file.write(row[0] + ' | ' + brage_file_name + ' : Failed\n')
           print(brage_file_name + ' - Failed')
         else:
           message = brage_file_name + ' : OK\n'

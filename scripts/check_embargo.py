@@ -56,7 +56,7 @@ def check_embargo(environment):
             if file['visibleForNonOwner']:
               message = 'Should not be visible for non owner\n'
               error_file.write(message)
-              print(message)''
+              print(message)
               correct_import = False
             if not delta is None and delta.days == 0 and delta.seconds > (60 * 60 * 24):
               message = 'Date incorrect: brage(' + brage_embargo_date.isoformat() + ') vs NVA(' + nva_embargo_date.isoformat() + ')\n'

@@ -50,7 +50,7 @@ def check_embargo(environment):
             if 'embargoDate' in file:
               nva_embargo_date = parser.isoparse(file['embargoDate'])
               delta = nva_embargo_date - brage_embargo_date
-            elif:
+            else:
               error_file.write('Missing embargo date in NVA!')
               print('Missing embargo date in NVA!')
             if file['visibleForNonOwner']:

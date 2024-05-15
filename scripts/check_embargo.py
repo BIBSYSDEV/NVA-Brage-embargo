@@ -1,8 +1,6 @@
 import csv, datetime, pytz, sys
 from dateutil import parser
 
-embargo_file_name = 'embargo_files.csv'
-
 # Name of the S3 bucket to extract identifiers from
 
 if (len(sys.argv) < 3):
@@ -14,6 +12,8 @@ from embargo_appender import extract_handles
 
 # The institution for which the script will extract publication identifiers
 institution = sys.argv[2]
+
+embargo_file_name = f'../files/embargo_files_{institution}.csv'
 
 # The environment where the script runs (e.g., 'dev', 'prod')
 environment = sys.argv[1]
@@ -34,14 +34,33 @@ def check_embargo(environment):
   with open(f'../files/{embargo_file_name}', newline='') as embargo_file:
     embargo_file_reader = csv.reader(embargo_file, delimiter='|')
     for row in embargo_file_reader:
-      found_file = False
-      correct_import = True
-      brage_file_name = row[1].strip()
-      brage_embargo_date = tz.localize(parser.isoparse(row[2].strip()))
-      if len(row) == 4:
-        id = row[3].strip()
-        registration = load_registration(id, environment)
-        for file in registration['associatedArtifacts']:
+      check_embargo_file(row, log_file, error_file, tz)
+
+  if not log_file.closed:
+    log_file.close()
+  if not error_file.closed:
+    error_file.close()
+
+def sanitize_date(input_date, tz):
+  idx_of_first_dash = input_date.find('-')
+  if idx_of_first_dash > 4:
+    input_date = '9999' + input_date[idx_of_first_dash:]
+  return tz.localize(parser.isoparse(input_date))
+
+def check_embargo_file(row, log_file, error_file, tz):
+  found_file = False
+  correct_import = True
+  handle = row[0].strip()
+  brage_file_name = row[1].strip()
+  raw_embargo_date = row[2].strip()
+  # print('Checking file ' + brage_file_name + ' for handle ' + row[0] + '\n')
+  brage_embargo_date = sanitize_date(raw_embargo_date, tz)
+  if len(row) == 4:
+    id = row[3].strip()
+    registration = load_registration(id, environment)
+    if 'associatedArtifacts' in registration:
+      for file in registration['associatedArtifacts']:
+        if 'type' in file and file['type'] != 'AssociatedLink':
           nva_file_name = file['name']
           if nva_file_name == brage_file_name:
             found_file = True
@@ -51,31 +70,33 @@ def check_embargo(environment):
               nva_embargo_date = parser.isoparse(file['embargoDate'])
               delta = nva_embargo_date - brage_embargo_date
             else:
-              error_file.write('Missing embargo date in NVA!')
-              print('Missing embargo date in NVA!')
+              do_log(error_file, handle, brage_file_name, id, 'Missing embargo date in NVA: ' + id)
             if file['visibleForNonOwner']:
-              message = 'Should not be visible for non owner\n'
-              error_file.write(message)
-              print(message)
+              message = 'Should not be visible for non owner'
+              do_log(error_file, handle, brage_file_name, id, message)
               correct_import = False
             if not delta is None and delta.days == 0 and delta.seconds > (60 * 60 * 24):
-              message = 'Date incorrect: brage(' + brage_embargo_date.isoformat() + ') vs NVA(' + nva_embargo_date.isoformat() + ')\n'
-              error_file.write(message)
-              print(message)
+              message = 'Date incorrect: brage(' + brage_embargo_date.isoformat() + ') vs NVA(' + nva_embargo_date.isoformat() + ')'
+              do_log(error_file, handle, brage_file_name, id, message)
               correct_import = False
-        if not correct_import and found_file:
-          # log handle
-          # log manglende publikasjonsId
-          error_file.write(row[0] + ' | ' + brage_file_name + ' : Failed\n')
-          print(brage_file_name + ' - Failed')
-        else:
-          message = brage_file_name + ' : OK\n'
-          log_file.write(message)
-  if not log_file.closed:
-    log_file.close()
-  if not error_file.closed:
-    error_file.close()
+    else:
+      correct_import = False
+      message = 'No file migrated!'
+      do_log(error_file, handle, brage_file_name, id, message)
+    
+    if correct_import and found_file:
+      do_log(log_file, handle, brage_file_name, id, 'OK!')
+    else:
+      # log handle
+      # log manglende publikasjonsId
+      do_log(error_file, handle, brage_file_name, id, 'Failed!')
+  else:
+    # incomplete row in embargo file
+    message = 'Incomplete entry in embargo file: ' + len(row)
+    do_log(error_file, handle, brage_file_name, id, message)
 
+def do_log(log_file, handle, brage_file, id, message):
+  log_file.write(handle + '|' + brage_file + '|' + id + '|' + message + '\n')
 
 if __name__ == '__main__':
   # Function to extract handles from the given bucket for the given institution

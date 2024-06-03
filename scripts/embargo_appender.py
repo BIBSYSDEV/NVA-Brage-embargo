@@ -6,7 +6,7 @@ import os
 
 embargo_file = '../files/FileEmbargo.txt'
 
-def extract_handles(bucket_name, institution):
+def extract_handles(bucket_name, institution, log_file, error_file):
   session = boto3.session.Session()
   output_file = f'../files/embargo_files_{institution}.csv'
 
@@ -20,7 +20,6 @@ def extract_handles(bucket_name, institution):
     for obj in page['Contents']:
       s3_keys.append(obj['Key'])
 
-  print('Found ')
   prefix = f'UPDATED_PUBLICATIONS_HANDLE_REPORTS/{institution}/'
   pages = paginator.paginate(Bucket=bucket_name, Prefix=prefix)
   for page in pages:
@@ -44,4 +43,4 @@ def extract_handles(bucket_name, institution):
               found = True
               break
           if not found:
-            print("ERROR! Could not locate handle " + handle_path + " on s3!\n")
+            error_file.write(handle + '| N/A | N/A |' + 'Could not locate handle ' + handle_path + ' on s3!\n')

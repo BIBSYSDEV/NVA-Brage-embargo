@@ -7,7 +7,7 @@ cp /brageexports/$instance/FileEmbargo.txt /brageexports/embargo_sjekk/files/.
 input_file="/brageexports/embargo_sjekk/files/FileEmbargo.txt"
 
 # Phrases to filter out
-phrases=("pdf.txt" "pdf.jpg" "license_rdf" "license.txt")
+phrases=(".pdf.txt" ".pdf.jpg" "license_rdf" "license.txt", ".jpg.jpg", ".PDF.jpg", ".PDF.txt")
 
 # Temporary file for intermediate processing
 temp_file="temp.csv"
